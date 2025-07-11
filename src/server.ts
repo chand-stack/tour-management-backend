@@ -1,14 +1,15 @@
 import {Server} from "http"
 import mongoose from "mongoose";
 import app from "./app";
+import { envVars } from "./app/config/env";
+
 let server : Server ;
-const PORT = 5000;
 const startServer = async()=>{
     try {
         mongoose.connect("mongodb+srv://admin:xgeBqpro1gUyPx0g@learning2023.svtmaib.mongodb.net/tour-management?retryWrites=true&w=majority&appName=learning2023")
         console.log("Database connected");
-        app.listen(PORT,()=>{
-            console.log(`server is running on port ${PORT}`);
+        server = app.listen(envVars.PORT,()=>{
+            console.log(`server is running on port ${envVars.PORT}`);
             
         })
         
@@ -19,3 +20,57 @@ const startServer = async()=>{
 }
 
 startServer()
+
+
+process.on("SIGTERM",()=>{
+    console.log("SIGTERM signal received.... server shutting down");
+    if(server){
+        server.close(()=>{
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+    
+})
+
+process.on("SIGINT",()=>{
+    console.log("SIGINT signal received.... server shutting down");
+    if(server){
+        server.close(()=>{
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+    
+})
+
+// unhandle rejection error controll
+process.on("unhandledRejection",(err)=>{
+    console.log("unhandled rejection detected.... server shutting down",err);
+    if(server){
+        server.close(()=>{
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+    
+})
+
+
+process.on("uncaughtException",(err)=>{
+    console.log("uncaught exception detected.... server shutting down",err);
+    if(server){
+        server.close(()=>{
+            process.exit(1)
+        })
+    }
+
+    process.exit(1)
+    
+})
+
+// Promise.reject(new Error("i forgot promise"))
+// throw new Error("for checking uncaught exception")
